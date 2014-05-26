@@ -45,7 +45,6 @@
 
   var stepScroll = function scrollStep(startY, targetY, t) {
     if (scrollDuration - t < moveFrequency) {
-      console.log('last call!')
       window.setTimeout(window.scrollTo, scrollDuration - t, 0, targetY)
     } else {
       var normalized = t / scrollDuration;
@@ -67,7 +66,6 @@
     var curved = Math.cos(scaled_x);
     var scaled_y = -curved * 0.5;  // cos range is 1..-1
     var shifted_y = scaled_y + 0.5;
-    console.log(shifted_y);
     return shifted_y;
   };
 
