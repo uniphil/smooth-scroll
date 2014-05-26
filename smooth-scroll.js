@@ -5,61 +5,79 @@
  */
 (function initSmoothScroll(window, undefined) {
   'use strict';
-  var height_fixed_header = 0, // For layout with header with position:fixed. Write here the height of your header for your anchor don't be hiden behind
-      speed = 500,
-      moving_frequency = 15, // Affects performance! High number makes scroll more smooth
-      links = document.getElementsByTagName('a'),
-      href;
-  
-  for (var i=0; i<links.length; i++) {
-    if (links[i].attributes.href === undefined) {
-      href = null;
+  var headerOffset = 0, // For layout with header with position:fixed. Write here the height of your header for your anchor don't be hiden behind
+      scrollDuration = 333,
+      moveFrequency = 15; // Affects performance! High number makes scroll more smooth
+
+  var registerTargets = function registerTargets(querySelectorExpr) {
+    // first, make sure our targets actually have a targetable id
+    var targetEls = document.querySelectorAll(querySelectorExpr),
+        targetID,
+        linksToTarget,
+        link;
+    for (var i=0; i<targetEls.length; i++) {
+      targetID = targetEls[i].id;
+      if (! targetID) {
+        throw "ScrollTo cannot scroll to targets without IDs.";
+      }
+
+      linksToTarget = document.querySelectorAll('a[href="#' + targetID  + '"]');
+      for (var j=0; j<linksToTarget.length; j++) {
+        linksToTarget[j].onclick = startScroll;
+      }
+    }
+  };
+
+  var startScroll = function startScroll(fromLink) {
+    var href = this.attributes.href.nodeValue.toString(),
+        url = href.substr(0, href.indexOf('#')),
+        id = href.substr(href.indexOf('#')+1),
+        target = document.getElementById(id),
+        startY = getCurrentScroll(),
+        targetY = getTargetOffsetFromTop(target);
+
+    stepScroll(startY, targetY, moveFrequency);
+    return false;
+  };
+
+  var stepScroll = function scrollStep(startY, targetY, t) {
+    if (scrollDuration - t < moveFrequency) {
+      console.log('last call!')
+      window.setTimeout(window.scrollTo, scrollDuration - t, 0, targetY)
     } else {
-      href = links[i].attributes.href.nodeValue.toString();
+      var normalized = t / scrollDuration;
+      var eased = easingFunc(normalized);
+      var realTarget = (targetY - startY) * eased + startY;
+      window.scrollTo(0, realTarget);
+      var nextT = t + moveFrequency;
+      window.setTimeout(scrollStep, moveFrequency, startY, targetY, nextT);
     }
-    if (href !== null && href.length > 1 && href.indexOf('#') != -1) {
-      links[i].onclick = function handleClick() {
-        var element,
-            href = this.attributes.href.nodeValue.toString(),
-            url = href.substr(0, href.indexOf('#')),
-            id = href.substr(href.indexOf('#')+1);
-        if (element = document.getElementById(id)) {
+  };
 
-          var hop_count = (speed - (speed % moving_frequency)) / moving_frequency, // Always make an integer
-            getScrollTopDocumentAtBegin = getScrollTopDocument(),
-            gap = (getScrollTopElement(element) - getScrollTopDocumentAtBegin) / hop_count;
+  var easingFunc = function ease(x) {
+    // take a value x between zero and one
+    // returns another value y, where
+    //   if x == 0, then y == 0
+    //   if x == 1, then y == 1
+    // this implementation uses a sine curve.
+    var scaled_x = x * Math.PI;
+    var curved = Math.cos(scaled_x);
+    var scaled_y = -curved * 0.5;  // cos range is 1..-1
+    var shifted_y = scaled_y + 0.5;
+    console.log(shifted_y);
+    return shifted_y;
+  };
 
-          if (window.history && typeof window.history.pushState == 'function') {
-            window.history.pushState({}, undefined, url+'#'+id);// Change URL for modern browser
-          }
-          
-          for (var i = 1; i <= hop_count; i++) {
-            (function scroll() {
-              var hop_top_position = gap*i;
-              setTimeout(function() { 
-                window.scrollTo(0, hop_top_position + getScrollTopDocumentAtBegin);
-              }, moving_frequency*i);
-            })();
-          }
-          
-          return false;
-        }
-      };
-    }
-  }
-  
-  var getScrollTopElement = function getScrollTopElement(e) {
-    var top = height_fixed_header * -1;
-
+  var getTargetOffsetFromTop = function getTargetOffsetFromTop(e) {
+    var top = headerOffset * -1;
     while (e.offsetParent != undefined && e.offsetParent != null) {
       top += e.offsetTop + (e.clientTop != null ? e.clientTop : 0);
       e = e.offsetParent;
     }
-    
     return top;
   };
-  
-  var getScrollTopDocument = function getScrollTopDocument() {
+
+  var getCurrentScroll = function getCurrentScroll() {
     var top;
     if (document.documentElement.scrollTop !== undefined) {
       top = document.documentElement.scrollTop;
@@ -68,4 +86,8 @@
     }
     return top;
   };
+
+  // export the function
+  window.smoothScroll = registerTargets;
+
 })(window);
