@@ -3,35 +3,30 @@ smooth-scroll
 
 smooth scrolling anchors page without framework dependency.
 
-===
-Demo
-===
-http://yappli.github.io/smooth-scroll/
+This is a fork of https://github.com/Yappli/smooth-scroll, modifying it's behaviour in the following ways:
 
-===
-Requirement
-===
-No one, it is a framework-free fonction (ie : You do not need to include any other file in your page such as jQuery)
+ * the scroll is eased instead of linear
+ * a function, `smoothScroll("querySelectorExpr")`, is exported to the global namespace. You must manually assign elements as targets for smooth scrolling.
 
-===
-How to use
-===
-Just include the js file to your page. All anchors links will be animate smoothy.
+Example:
 
-If your layout include a position:fixed header your anchors will hide themself behind. To fix-it, look-at the param height_fixed_header.
+```html
+<a href="#menu"><!-- some custom JS shows/hides the menu -->
+</a>
+<ul id="menu">
+  <a href="#videos">videos</a><!-- we want to smooth-scroll to these -->
+  <a href="#photos">photos</a>
+</ul>
+<div id="videos">
+  ...
+</div>
+<div id="photos">
+  ...
+</div>
+```
 
-===
-Bower
-===
-If you are using bower, just run `bower  install smooth-scroll`
+```javascript
+smoothScroll("#videos, #photos");
+```
 
-===
-Limitation
-===
-The anchor active is wrotten in the url for modern browser only. For old browser, it might be possible to get compatibility with https://github.com/browserstate/history.js
-
-===
-Length
-===
-
-The length of the minified version is 432 bytes ! (After gzip)
+ta-daa
