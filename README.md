@@ -30,3 +30,5 @@ smoothScroll("#videos, #photos");
 ```
 
 ta-daa
+
+[**demo**](http://uniphil.github.io/smooth-scroll/)
