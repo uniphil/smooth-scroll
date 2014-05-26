@@ -37,6 +37,9 @@
         targetY = getTargetOffsetFromTop(target);
 
     stepScroll(startY, targetY, moveFrequency);
+    if(window.history && typeof window.history.pushState == 'function') {
+      window.history.pushState({}, undefined, url+'#'+id);// Change URL for modern browser
+    }
     return false;
   };
 
